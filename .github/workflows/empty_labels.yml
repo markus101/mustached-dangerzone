@@ -1,0 +1,28 @@
+name: Close issues without labels
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  close-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for labels
+        id: check_labels
+        run: |
+          ISSUE_LABELS="${{ github.event.issue.labels }}"
+          if [ "$ISSUE_LABELS" = "[]" ]; then
+            echo "::set-output name=has_no_labels::true"
+          else
+            echo "::set-output name=has_no_labels::false"
+          fi
+      - name: Close issue if no labels found
+        if: steps.check_labels.outputs.has_no_labels == 'true'
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body "This issue was closed automatically because it was created without following an issue template. Please use the [issue templates](https://github.com{{ github.repository }}/issues/new/choose) and ensure appropriate labels are applied."
+          gh issue close ${{ github.event.issue.number }} --reason "not planned"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
