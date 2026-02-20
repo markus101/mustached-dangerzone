@@ -2,7 +2,9 @@ name: Close issues without labels
 
 on:
   issues:
-    types: [opened]
+    types:
+      - opened
+      - reopened
 
 jobs:
   close-issue:
@@ -13,11 +15,11 @@ jobs:
       - name: Check for labels
         id: check_labels
         run: |
-          ISSUE_LABELS="${{ github.event.issue.labels }}"
-          if [ "$ISSUE_LABELS" = "[]" ]; then
-            echo "::set-output name=has_no_labels::true"
+          ISSUE_LABELS="${{ join(github.event.issue.labels) == '' }}"
+          if [ "$ISSUE_LABELS" = "" ]; then
+            echo "has_no_labels=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=has_no_labels::false"
+            echo "has_no_labels=false" >> $GITHUB_OUTPUT
           fi
       - name: Close issue if no labels found
         if: steps.check_labels.outputs.has_no_labels == 'true'
