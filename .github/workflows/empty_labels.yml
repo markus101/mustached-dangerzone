@@ -15,12 +15,9 @@ jobs:
       - name: Check for labels
         id: check_labels
         run: |
-          ISSUE_LABELS="${{ join(github.event.issue.labels) == '' }}"
-          if [ "$ISSUE_LABELS" = "" ]; then
-            echo "has_no_labels=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_no_labels=false" >> $GITHUB_OUTPUT
-          fi
+          EMPTY_LABELS="${{ join(github.event.issue.labels) == '' }}"
+
+          echo "has_no_labels=$EMPTY_LABELS" >> $GITHUB_OUTPUT
       - name: Close issue if no labels found
         if: steps.check_labels.outputs.has_no_labels == 'true'
         run: |
